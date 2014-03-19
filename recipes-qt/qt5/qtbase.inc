@@ -24,7 +24,7 @@ SRC_URI += " \
     file://0024-Use-OE_QMAKE_PATH_EXTERNAL_HOST_BINS-to-determine-pa.patch \
 "
 
-DEPENDS += "qtbase-native"
+DEPENDS += "qtbase-native libxi"
 
 # for syncqt
 RDEPENDS_${PN}-tools += "perl"
