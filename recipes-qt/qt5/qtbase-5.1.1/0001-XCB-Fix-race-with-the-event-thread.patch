@@ -1,0 +1,44 @@
+From bd00b51c47f986dd2f8b7696b09f10f19321a99e Mon Sep 17 00:00:00 2001
+From: Uli Schlachter <psychon@znc.in>
+Date: Thu, 22 Aug 2013 14:31:10 +0200
+Subject: [PATCH] XCB: Fix race with the event thread
+
+The XCB backend runs a thread which gets events out of the XCB event
+queue and feeds it to the main thread via another queue. This queue is
+protected by a mutex.
+
+However, when the event thread exits, it cleans up after itself and
+frees all remaining entries in the queue. This code messed with the
+event queue without acquiring the needed mutex and left behind a list
+full of stale pointers.
+
+Fix this and protect the freeing with the correct mutex and clear the event
+queue afterwards.
+
+Change-Id: Ie49cf6241b76be86d8cebbc931f7226a3f6a14e5
+Signed-off-by: Uli Schlachter <psychon@znc.in>
+Reviewed-by: Friedemann Kleint <Friedemann.Kleint@digia.com>
+Reviewed-by: Shawn Rutledge <shawn.rutledge@digia.com>
+---
+ src/plugins/platforms/xcb/qxcbconnection.cpp | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/src/plugins/platforms/xcb/qxcbconnection.cpp b/src/plugins/platforms/xcb/qxcbconnection.cpp
+index 01af233..2ce34ea 100644
+--- a/src/plugins/platforms/xcb/qxcbconnection.cpp
++++ b/src/plugins/platforms/xcb/qxcbconnection.cpp
+@@ -989,8 +989,11 @@ void QXcbEventReader::run()
+         emit eventPending();
+     }
+ 
++    m_mutex.lock();
+     for (int i = 0; i < m_events.size(); ++i)
+         free(m_events.at(i));
++    m_events.clear();
++    m_mutex.unlock();
+ }
+ 
+ void QXcbEventReader::addEvent(xcb_generic_event_t *event)
+-- 
+1.9.1
+
