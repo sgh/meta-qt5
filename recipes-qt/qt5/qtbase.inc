@@ -23,7 +23,6 @@ SRC_URI += " \
     file://0023-configure-make-freetype-a-configurable-option.patch \
     file://0024-Use-OE_QMAKE_PATH_EXTERNAL_HOST_BINS-to-determine-pa.patch \
     file://0001-Avoid-duplicate-emulated-mouse-events-with-XInput2.patch \
-    file://0001-XCB-Fix-race-with-the-event-thread.patch \
 "
 
 DEPENDS += "qtbase-native libxi"
